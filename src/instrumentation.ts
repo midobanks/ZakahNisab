@@ -1,7 +1,6 @@
-import { startDailyRefresh } from '@/lib/scheduler';
-
-export function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
+export async function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs' && !process.env.VERCEL) {
+    const { startDailyRefresh } = await import('@/lib/scheduler');
     startDailyRefresh();
   }
 }
