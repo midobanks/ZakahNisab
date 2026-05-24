@@ -1,0 +1,1 @@
+export { EducationalCard } from './EducationalCard';
