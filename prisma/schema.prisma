@@ -57,6 +57,24 @@ model ExchangeRate {
   @@unique([baseCurrency, targetCurrency, fetchedAt])
 }
 
+model Donation {
+  id              String    @id @default(cuid())
+  stripeSessionId String    @unique
+  stripePaymentId String?
+  amount          Float
+  currency        String    @default("usd")
+  status          String    @default("pending")
+  customerEmail   String?
+  customerName    String?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([stripeSessionId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
 model ApiRefreshLog {
   id          String    @id @default(cuid())
   service     String

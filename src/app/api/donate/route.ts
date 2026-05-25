@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
-const DOMAIN = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const DOMAIN = process.env.NEXT_PUBLIC_APP_URL;
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,10 +13,13 @@ export async function POST(request: NextRequest) {
 
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) {
-      return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Stripe is not configured. Set STRIPE_SECRET_KEY in your environment variables.' },
+        { status: 500 },
+      );
     }
 
-    const Stripe = (await import('stripe')).default;
+    const origin = DOMAIN || new URL(request.url).origin;
     const stripe = new Stripe(secretKey);
 
     const session = await stripe.checkout.sessions.create({
@@ -33,8 +37,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${DOMAIN}/donate/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${DOMAIN}/donate/cancel`,
+      success_url: `${origin}/donate/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/donate/cancel`,
       metadata: {
         source: 'zakahnisab_donation',
       },
