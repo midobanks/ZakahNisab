@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { prisma } from '@/lib/prisma';
+
+async function saveDonation(data: {
+  stripeSessionId: string;
+  stripePaymentId?: string;
+  amount: number;
+  currency: string;
+  status: string;
+  customerEmail?: string | null;
+  customerName?: string | null;
+  metadata?: Record<string, string>;
+}) {
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    await prisma.donation.create({ data });
+  } catch (err) {
+    console.error('[WEBHOOK] Failed to save donation:', err);
+  }
+}
 
 export async function POST(request: NextRequest) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -29,47 +46,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 400 });
   }
 
-  try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
+  switch (event.type) {
+    case 'checkout.session.completed': {
+      const session = event.data.object as Stripe.Checkout.Session;
 
-        await prisma.donation.create({
-          data: {
-            stripeSessionId: session.id,
-            stripePaymentId: session.payment_intent?.toString() ?? null,
-            amount: (session.amount_total ?? 0) / 100,
-            currency: session.currency ?? 'usd',
-            status: 'completed',
-            customerEmail: session.customer_details?.email ?? null,
-            customerName: session.customer_details?.name ?? null,
-            metadata: session.metadata ?? {},
-          },
-        });
+      await saveDonation({
+        stripeSessionId: session.id,
+        stripePaymentId: session.payment_intent?.toString(),
+        amount: (session.amount_total ?? 0) / 100,
+        currency: session.currency ?? 'usd',
+        status: 'completed',
+        customerEmail: session.customer_details?.email,
+        customerName: session.customer_details?.name,
+        metadata: (session.metadata as Record<string, string>) ?? {},
+      });
 
-        break;
-      }
-
-      case 'checkout.session.expired': {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        await prisma.donation.create({
-          data: {
-            stripeSessionId: session.id,
-            amount: (session.amount_total ?? 0) / 100,
-            currency: session.currency ?? 'usd',
-            status: 'expired',
-            metadata: session.metadata ?? {},
-          },
-        });
-
-        break;
-      }
+      break;
     }
 
-    return NextResponse.json({ received: true });
-  } catch (err) {
-    console.error('[STRIPE WEBHOOK]', err);
-    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+    case 'checkout.session.expired': {
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      await saveDonation({
+        stripeSessionId: session.id,
+        amount: (session.amount_total ?? 0) / 100,
+        currency: session.currency ?? 'usd',
+        status: 'expired',
+        metadata: (session.metadata as Record<string, string>) ?? {},
+      });
+
+      break;
+    }
   }
+
+  return NextResponse.json({ received: true });
 }
