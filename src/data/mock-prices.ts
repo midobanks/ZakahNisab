@@ -5,7 +5,7 @@ export interface MockPriceEntry {
 
 // NGN values match these targets exactly:
 //   Gold Nisab (87.48g × 198,653.2189071788 NGN/g) = NGN 17,378,183.59
-//   Silver Nisab (612.36g × 3,326.59680580051 NGN/g) = NGN 2,037,074.82
+//   Silver Nisab (595g × 3,326.59680580051 NGN/g) = NGN 2,037,074.82
 // USD base derived as NGN ÷ 1306 (mock exchange rate).
 // Other currencies computed as USD × mock exchange rate (rounded to 2 d.p.).
 export const MOCK_PRICES: Record<string, MockPriceEntry> = {

@@ -9,7 +9,7 @@ const mockPrices: MetalPrices = {
   lastUpdated: '2026-05-18T08:00:00.000Z',
 };
 
-const silverNisabValue = 612.36 * 0.87; // ~532.75
+const silverNisabValue = 595 * 0.87; // ~517.65
 
 function makeInputs(overrides: Partial<ZakahInputs> = {}): ZakahInputs {
   return {
@@ -60,8 +60,8 @@ describe('calculateZakah', () => {
   });
 
   it('calculates silver value correctly from grams', () => {
-    const result = calculateZakah(makeInputs({ silverGrams: 612.36 }), mockPrices, 'silver');
-    expect(result.silverValue).toBeCloseTo(612.36 * 0.87, 2);
+    const result = calculateZakah(makeInputs({ silverGrams: 595 }), mockPrices, 'silver');
+    expect(result.silverValue).toBeCloseTo(595 * 0.87, 2);
   });
 
   it('toggles isAboveNisab when switching Nisab type', () => {

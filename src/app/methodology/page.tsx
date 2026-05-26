@@ -10,7 +10,7 @@ export default function MethodologyPage() {
           <h2 className="text-sm font-semibold text-gray-900 mb-2">Nisab Thresholds</h2>
           <div className="space-y-2 text-sm text-gray-600 leading-relaxed">
             <p><strong>Gold Nisab:</strong> 87.48 grams of gold × current gold price per gram</p>
-            <p><strong>Silver Nisab:</strong> 612.36 grams of silver × current silver price per gram</p>
+            <p><strong>Silver Nisab:</strong> 595 grams of silver × current silver price per gram</p>
             <p>These weights follow the standard Hanafi school consensus. Both thresholds are provided so users may follow either.</p>
           </div>
         </Card>

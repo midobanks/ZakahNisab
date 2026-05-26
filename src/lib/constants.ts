@@ -1,7 +1,7 @@
 import type { CurrencyCode, CurrencyInfo } from '@/types/zakah';
 
 export const GOLD_NISAB_GRAMS = 87.48;
-export const SILVER_NISAB_GRAMS = 612.36;
+export const SILVER_NISAB_GRAMS = 595;
 export const ZAKAH_RATE = 0.025;
 
 export const SUPPORTED_CURRENCIES: CurrencyInfo[] = [

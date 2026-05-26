@@ -43,7 +43,7 @@ export function NisabThresholdSelector({ value, onChange }: NisabThresholdSelect
       </div>
       <div className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
         {value === 'silver'
-          ? 'Silver Nisab (612.36g silver) — the lower threshold. Many scholars recommend this as it is more cautious and ensures Zakah is given sooner.'
+          ? 'Silver Nisab (595g silver) — the lower threshold. Many scholars recommend this as it is more cautious and ensures Zakah is given sooner.'
           : 'Gold Nisab (87.48g gold) — the higher threshold. Some scholars follow this for determining Zakah obligation.'}
       </div>
     </div>

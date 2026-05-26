@@ -59,7 +59,7 @@ export function CalculationResults({ result, currency }: CalculationResultsProps
           <ResultRow label="Net Zakatable Wealth" value={formatCurrency(netWealth, currency)} highlight />
           <div className="border-t border-gray-100 my-1" />
           <ResultRow label={`Gold Nisab (87.48g)`} value={formatCurrency(goldNisabValue, currency)} />
-          <ResultRow label={`Silver Nisab (612.36g)`} value={formatCurrency(silverNisabValue, currency)} />
+          <ResultRow label={`Silver Nisab (595g)`} value={formatCurrency(silverNisabValue, currency)} />
           <ResultRow label={`Selected Threshold`} value={formatCurrency(selectedNisabValue, currency)} highlight />
         </div>
       </Card>
