@@ -35,27 +35,22 @@ export function CalculatorSection() {
   const result = useZakahCalculation(inputs, prices, nisabType);
 
   return (
-    <div>
-      <div className="mb-6">
-        <NisabThresholdSelector value={nisabType} onChange={setNisabType} />
-      </div>
+    <div className="space-y-6">
+      <NisabThresholdSelector value={nisabType} onChange={setNisabType} />
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <div className="space-y-8">
-          <AssetInputs
-            cash={rawValues.cash}
-            investments={rawValues.investments}
-            goldGrams={rawValues.goldGrams}
-            silverGrams={rawValues.silverGrams}
-            businessAssets={rawValues.businessAssets}
-            receivables={rawValues.receivables}
-            otherAssets={rawValues.otherAssets}
-            onChange={handleChange}
-          />
-          <DebtInputs debts={rawValues.debts} onChange={handleChange} />
-        </div>
-
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AssetInputs
+          cash={rawValues.cash}
+          investments={rawValues.investments}
+          goldGrams={rawValues.goldGrams}
+          silverGrams={rawValues.silverGrams}
+          businessAssets={rawValues.businessAssets}
+          receivables={rawValues.receivables}
+          otherAssets={rawValues.otherAssets}
+          onChange={handleChange}
+        />
         <div className="space-y-6">
+          <DebtInputs debts={rawValues.debts} onChange={handleChange} />
           {result && (
             <>
               <CalculationResults result={result} currency={currency} />
