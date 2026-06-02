@@ -74,7 +74,7 @@ export interface HijriConversionRequest {
   adjustment?: number;
 }
 
-export type MetalProvider = 'metalpriceapi' | 'metals-api' | 'manual';
+export type MetalProvider = 'apiverve' | 'metals-api' | 'manual';
 
 export type MetalPriceStatus = 'live' | 'cached' | 'fallback' | 'manual_override' | 'unavailable';
 

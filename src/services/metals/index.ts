@@ -1,4 +1,3 @@
-import MetalpriceAPI from 'metalpriceapi-ts';
 import { prisma } from '@/lib/prisma';
 import { MOCK_PRICES, MOCK_LAST_UPDATED } from '@/data/mock-prices';
 import { getLatestRates } from '@/services/exchange-rates';
@@ -63,25 +62,61 @@ export function calculateNisabValues(params: {
   };
 }
 
-async function fetchFromMetalpriceAPI(): Promise<NormalizedMetalPrices> {
-  const apiKey = process.env.METALPRICE_API_KEY;
+async function fetchFromApiverveAPI(): Promise<NormalizedMetalPrices> {
+  const apiKey = process.env.APIVERVE_API_KEY;
   if (!apiKey) {
-    throw new Error('METALPRICE_API_KEY is not configured');
+    throw new Error('APIVERVE_API_KEY is not configured');
   }
 
-  const api = new MetalpriceAPI(apiKey);
-  const res = await api.fetchLive('USD', ['XAU', 'XAG'], 'gram');
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-API-Key': apiKey,
+  };
 
-  if (!res.data.success) {
-    throw new Error('MetalpriceAPI request failed');
+  const baseCurrency = process.env.METAL_PRICE_BASE_CURRENCY || 'USD';
+
+  const [goldRes, silverRes] = await Promise.all([
+    fetch(`https://api.apiverve.com/v1/goldprice?currency=${baseCurrency}`, { headers }),
+    fetch(`https://api.apiverve.com/v1/silverprice?currency=${baseCurrency}`, { headers }),
+  ]);
+
+  if (!goldRes.ok) {
+    throw new Error(`Apiverve gold price request failed: ${goldRes.status}`);
+  }
+  if (!silverRes.ok) {
+    throw new Error(`Apiverve silver price request failed: ${silverRes.status}`);
   }
 
-  const rates = res.data.rates;
-  if (!rates?.XAU || !rates?.XAG) {
-    throw new Error('MetalpriceAPI response missing metal rates');
+  const goldBody = await goldRes.json();
+  const silverBody = await silverRes.json();
+
+  if (goldBody.status !== 'ok') {
+    throw new Error(`Apiverve gold price error: ${goldBody.error ?? 'unknown'}`);
+  }
+  if (silverBody.status !== 'ok') {
+    throw new Error(`Apiverve silver price error: ${silverBody.error ?? 'unknown'}`);
   }
 
-  return normalizeMetalPrices({ goldRate: rates.XAU, silverRate: rates.XAG, ratesAreInverse: true });
+  const goldPricePerGram = goldBody.data.gram;
+  const silverPricePerGram = silverBody.data.gram;
+
+  if (typeof goldPricePerGram !== 'number' || !Number.isFinite(goldPricePerGram) || goldPricePerGram <= 0) {
+    throw new Error('Invalid gold price from Apiverve');
+  }
+  if (typeof silverPricePerGram !== 'number' || !Number.isFinite(silverPricePerGram) || silverPricePerGram <= 0) {
+    throw new Error('Invalid silver price from Apiverve');
+  }
+
+  if (goldPricePerGram <= silverPricePerGram) {
+    throw new Error('Gold price must be greater than silver price');
+  }
+
+  return {
+    goldPricePerTroyOunce: goldPricePerGram * TROY_OUNCE_IN_GRAMS,
+    silverPricePerTroyOunce: silverPricePerGram * TROY_OUNCE_IN_GRAMS,
+    goldPricePerGram,
+    silverPricePerGram,
+  };
 }
 
 async function fetchFromMetalsAPI(): Promise<NormalizedMetalPrices> {
@@ -125,17 +160,17 @@ export async function fetchMetalPrices(): Promise<{
 }> {
   const errors: string[] = [];
 
-  // Try primary provider
-  if (process.env.METALPRICE_API_KEY) {
+  // Try primary provider (Apiverve)
+  if (process.env.APIVERVE_API_KEY) {
     try {
-      const prices = await fetchFromMetalpriceAPI();
+      const prices = await fetchFromApiverveAPI();
       return {
         prices,
-        provider: 'metalpriceapi',
+        provider: 'apiverve',
         sourceTimestamp: new Date().toISOString(),
       };
     } catch (err) {
-      errors.push(`metalpriceapi: ${err instanceof Error ? err.message : 'unknown error'}`);
+      errors.push(`apiverve: ${err instanceof Error ? err.message : 'unknown error'}`);
     }
   }
 
@@ -181,7 +216,7 @@ export async function refreshMetalPrices(): Promise<void> {
   const startedAt = new Date();
 
   try {
-    logRecord = await logRefreshStart('metal_prices', 'metalpriceapi', startedAt);
+    logRecord = await logRefreshStart('metal_prices', 'apiverve', startedAt);
 
     const result = await fetchMetalPrices();
     await saveMetalPrices({
