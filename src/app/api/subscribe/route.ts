@@ -18,8 +18,14 @@ export async function POST(request: NextRequest) {
       if (existing.confirmedAt) {
         return NextResponse.json({ message: 'Already subscribed' }, { status: 200 });
       }
-      // Resend confirmation for unconfirmed subscriptions
-      const sent = await sendConfirmationEmail(email, existing.unsubscribeToken);
+      const token = existing.unsubscribeToken ?? generateUnsubscribeToken();
+      if (!existing.unsubscribeToken) {
+        await prisma.emailSubscription.update({
+          where: { id: existing.id },
+          data: { unsubscribeToken: token },
+        });
+      }
+      const sent = await sendConfirmationEmail(email, token);
       if (!sent) {
         console.warn('[SUBSCRIBE] Failed to send confirmation email, but subscription saved');
       }

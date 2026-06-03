@@ -5,11 +5,17 @@ export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token');
 
   if (!token) {
-    return NextResponse.json({ error: 'Missing unsubscribe token' }, { status: 400 });
+    return new Response(
+      `<html><body style="font-family:sans-serif;padding:40px;text-align:center">
+        <h1>Missing Token</h1>
+        <p>No unsubscribe token provided. If you received this link via email, please click the full link.</p>
+      </body></html>`,
+      { status: 400, headers: { 'content-type': 'text/html' } }
+    );
   }
 
   try {
-    const sub = await prisma.emailSubscription.findUnique({
+    const sub = await prisma.emailSubscription.findFirst({
       where: { unsubscribeToken: token },
     });
 

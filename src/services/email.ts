@@ -12,7 +12,8 @@ export function generateUnsubscribeToken(): string {
   return crypto.randomBytes(24).toString('hex');
 }
 
-export function buildUnsubscribeUrl(token: string): string {
+export function buildUnsubscribeUrl(token: string | null): string {
+  if (!token) return `${APP_URL}/api/unsubscribe`;
   return `${APP_URL}/api/unsubscribe?token=${token}`;
 }
 
