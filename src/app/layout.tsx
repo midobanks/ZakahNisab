@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "ZakahNisab — Know Your Nisab. Fulfill Your Zakah.",
   description:
     "Calculate your Zakah obligation accurately using live gold and silver Nisab values. A free, mobile-first tool for Muslims worldwide.",
+  icons: {
+    icon: "/ZakahNisab Logo.png",
+  },
 };
 
 export default function RootLayout({
